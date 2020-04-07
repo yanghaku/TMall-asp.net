@@ -1,0 +1,33 @@
+﻿@{
+    ViewBag.Title = "Login";
+}
+
+
+@model TMall.Models.UserLoginModel
+
+<h2>Login</h2>
+
+@using (Html.BeginForm("Login", "Users", FormMethod.Post, new { onsubmit = "var t=$('#Passwd').val();$('#Passwd').val($.md5(t));" })) {
+    @Html.LabelFor(m => m.Username)
+    @Html.TextBoxFor(m => m.Username)
+    @Html.ValidationMessageFor(m => m.Username)
+    <br />
+    @Html.LabelFor(m => m.Passwd)
+    @Html.PasswordFor(m => m.Passwd)
+    @Html.ValidationMessageFor(m => m.Passwd)
+    <br />
+    @Html.LabelFor(m => m.Captcha)
+    @Html.TextBoxFor(m => m.Captcha)
+    @Html.ValidationMessageFor(m => m.Captcha)
+    @Html.Label("记住登录状态7天")
+    @Html.CheckBox("remember")
+
+    <input hidden="hidden" name="redirectURL" value="@ViewData["redirectURL"]" />
+    <img src="~/Users/Captcha" alt="Captcha" />
+    <input type="submit" value="登录" />
+
+}
+
+@Html.ActionLink("没有账号?免费注册", "Register", "Users", new { redirectURL = Request["redirectURL"] }, new { })
+
+@Scripts.Render("~/Bundles/encrypt")

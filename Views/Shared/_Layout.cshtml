@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/facicon.png" rel="shortcut icon" type="image/x-icon" />
+    <title>@ViewBag.Title - TMall购物,多快好省,只为品质生活</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    <link href="https://cdn.bootcss.com/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.bootcss.com/marked/0.8.2/marked.min.js"></script>
+    <link href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.19.2/axios.min.js"></script>
+    <script>
+        toastr.options = { // toastr配置
+            "closeButton": true, //是否显示关闭按钮
+            "debug": false, //是否使用debug模式
+            "progressBar": true, //是否显示进度条
+            "positionClass": "toast-top-center",//显示的动画位置
+            "showDuration": "400", //显示的动画时间
+            "hideDuration": "1000", //消失的动画时间
+            "timeOut": "7000", //展现时间
+            "extendedTimeOut": "1000", //加长展示时间
+            "showEasing": "swing", //显示时的动画缓冲方式
+            "hideEasing": "linear", //消失时的动画缓冲方式
+            "showMethod": "fadeIn", //显示时的动画方式
+            "hideMethod": "fadeOut" //消失时的动画方式
+        };
+    </script>
+    <style>
+        hr{
+            border-top: 1px solid #1338c9
+        }
+    </style>
+</head>
+<body style="background-color: #f5f5f5">
+    <!-- 导航栏 start -->
+    <header id="header">
+        <div class="navbar navbar-fixed-top" style="background-color: ghostwhite">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" style="background-color: aliceblue" class="navbar-toggle navbar-btn" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar">---</span>
+                        <span class="icon-bar">---</span>
+                        <span class="icon-bar">---</span>
+                    </button>
+                    @Html.ActionLink("TMall", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li>@Html.ActionLink("主页", "Index", "Home")</li>
+                        <li>@Html.ActionLink("关于", "About", "Home")</li>
+                    </ul>
+                    <form role="form" class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Search" />
+                            <button type="submit" class="btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+                        </div>
+                    </form>
+                    <ul class="nav navbar-nav navbar-right">
+                        @if (Session["username"] == null) {//未登录
+                            <li>@Html.ActionLink("登录", "Login", "Users", new { redirectURL = Request.Url.PathAndQuery }, new { })</li>
+                            <li>@Html.ActionLink("注册", "Register", "Users", new { redirectURL = Request.Url.PathAndQuery }, new { })</li>
+                        } else {
+                            <li><a href="/Users/Profiles#cartAPP">购物车</a></li>
+                            <li><a href="/Users/Profiles#orderAPP">我的订单</a></li>
+                            <li><a href="/Users/Profiles#collectAPP">我的收藏</a></li>
+
+                            <li class="dropdown">
+                                <a href="javascript:void(0);" role="button" class="dropdown-toggle" data-toggle="dropdown">
+                                    <span><i class="fa fa-angle-down"></i>欢迎 @Session["username"]</span>
+                                </a>
+                                <ul role="menu" class="dropdown-menu" aria-labelledby="dLabel">
+                                    <li><a href="/Users/Profiles#profileAPP">个人中心</a></li>
+
+                                    @if (TMall.Respository.Users.isAdmin((string)Session["username"])) {
+                                        <li>@Html.ActionLink("新增商品", "Edit", "Item")</li>
+                                    }
+                                    <li>@Html.ActionLink("注销", "Logout", "Users")</li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- 导航栏 end -->
+    
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        @if (Session["username"] != null) {
+        <div class="row" id="recommendAPP">
+            <div class="col-md-12" style="color: red">
+                <h4><span class="pull-left"><i class="fa fa-heart"></i>为您推荐</span>
+                <span class="pull-right"><a href="javascript:void(0);" onclick="change();">换一批</a></span></h4>
+            </div>
+            <div class="col-md-2 col-sm-6 col-lg-2 col-xs-6" v-for="display in displays" style="">
+                <div class="text-center" style="display: block; background-color: floralwhite; margin-top: 10px">
+                    <a v-bind:href="display.Href" target="_blank">
+                    <img v-bind:src="display.ItemPicture" alt="picture" class="img-responsive"/>
+                    {{display.ItemName}}
+                    </a><br />
+                    <span style="font-size: larger; color: crimson">{{display.ItemPrice}}</span>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        }
+    </div>
+    <footer class="text-center" style="color: white; background-color: black; font-size: larger">
+        <p>&copy; @DateTime.Now - TMall designed by YB</p>
+        <address style="margin-bottom: 0"><strong>source: <a href="https://github.com/yanghaku/TMall-asp.net" target="_blank">https://github.com/yanghaku/TMall-asp.net</a></strong></address>
+    </footer>
+    @if (Session["username"] != null) {
+    <script>
+        let recommendAPP = new Vue({
+            el: "#recommendAPP",
+            data: {
+                recommends: [],
+                displays: []
+            },
+            mounted: function () {
+                axios({
+                    method: "get",
+                    url: "/Item/Recommend",
+                }).then(function (response) {
+                    let l = response.data;
+                    for (let item of l) {
+                        item.Href = "/Item/Detail?item_id=" + item.ItemId;
+                        item.ItemPrice = "¥" + item.ItemPrice;
+                    }
+                    recommendAPP.recommends = l;
+                    for (var i = 0; i < 10; ++i)recommendAPP.recommends.push(recommendAPP.recommends[0]);
+                    change();
+                });
+            }
+        });
+        function change() { // 换一批展示
+            // 从列表里面随机选6个
+            recommendAPP.displays = [];
+            if (recommendAPP.recommends.length <= 6) {
+                recommendAPP.displays = recommendAPP.recommends;
+                return;
+            }
+            let choice = [];
+            while (choice.length < 6) {
+                // 随机抽取位置
+                let pos = Math.floor(Math.random() * recommendAPP.recommends.length);
+                // 先查找, 防止重复
+                if (choice.indexOf(pos) == -1) choice.push(pos);
+            }
+            console.log(choice);
+            for (let c of choice) {
+                recommendAPP.displays.push(recommendAPP.recommends[c]);
+            }
+        }
+    </script>
+    }
+</body>
+</html>

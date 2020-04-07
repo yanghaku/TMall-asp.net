@@ -1,0 +1,38 @@
+﻿@{
+    ViewBag.Title = "商品列表";
+}
+@using Webdiyer.WebControls.Mvc
+@model PagedList<TMall.Models.ItemModel>
+
+
+<h4>total: @ViewData["totalCount"]</h4>
+<div>
+    <ul>
+        @if (Model != null) {
+            foreach (var item in Model) {
+                <li>
+                    <a href="/Item/Detail?item_id=@item.ItemId" target="_blank">
+                        <img src="@item.ItemPicture" />
+                        @item.ItemName
+                    </a>
+                    <br /><span>销量: @item.ItemSales</span>
+                    <br /><span>库存: @item.ItemNumber</span>
+                    <br /><span>价格: @item.ItemPrice</span>
+                </li>
+
+            }
+        } else {
+            <li><h2>No Item!</h2></li>
+        }
+    </ul>
+</div>
+<div>
+    @Html.Pager(Model, new PagerOptions() {
+        AutoHide = false,
+        PageIndexParameterName = "page",
+        FirstPageText = "首页",
+        PrevPageText = "上一页",
+        NextPageText = "下一页",
+        LastPageText = "尾页",
+    })
+</div>

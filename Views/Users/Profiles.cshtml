@@ -1,0 +1,573 @@
+﻿@{
+    ViewBag.Title = Session["username"] + " 个人中心";
+}
+
+
+@model TMall.Models.UserProfileModel
+
+
+<div class="row">
+    <div id="cartAPP" class="col-md-12 col-sm-12 col-lg-12">
+        <div class="row" data-toggle="collapse" data-target="#cartList">
+            <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6"><h2>购物车</h2></div>
+            <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6 text-right">
+                <h2><a href="javascript:void(0);"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></h2>
+            </div>
+            <div class="col-md-12"><hr /></div>
+        </div>
+        <!-- 上面的div是折叠块的打开关闭界面, 下面的div是折叠块(默认折叠)-->
+        <div id="cartList" class="collapse">
+            <ul class="list-group">
+                <li v-for="cart in carts" class="list-group-item">
+                    <div class="row">
+                        <div class="col-sm-7">
+                            <a v-bind:href="cart.Href" target="_blank">
+                                <img v-bind:src="cart.ItemPicture" class="img-responsive" alt="商品图片" />
+                            </a>
+                        </div>
+                        <div class="col-sm-5">
+                            <span>商品编号: {{cart.ItemId}}</span><br />
+                            <span>商品名称: {{cart.ItemName}}</span><br />
+                            <span>商品价格: {{cart.ItemPrice}}</span><br />
+                            <span>商品销量: {{cart.ItemSales}}</span><br />
+                            <span>商品库存: {{cart.ItemNumber}}</span><br />
+                            <span>加入购物车数量: {{cart.CartItemNumber}}</span><br />
+                            <span>加入购物车时间: {{cart.CartInTime}}</span><br />
+                            <button class="btn btn-primary" v-on:click="setCart" v-bind:name="cart.ItemId">修改数量</button>
+                            <button class="btn btn-danger" v-on:click="delCart" v-bind:name="cart.ItemId">从购物车移除</button>
+                            <button class="btn btn-primary" onclick="buy(this);" v-bind:name="cart.ItemId">立即购买</button>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="orderAPP" class="col-md-12 col-sm-12 col-lg-12">
+        <div class="row" data-toggle="collapse" data-target="#orderList">
+            <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6"><h2>我的订单</h2></div>
+            <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6 text-right">
+                <h2><a href="javascript:void(0);"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></h2>
+            </div>
+            <div class="col-md-12"><hr /></div>
+        </div>
+        <!-- 上面的div是折叠块的打开关闭界面, 下面的div是折叠块(默认折叠)-->
+        <div id="orderList" class="collapse">
+            <table class="table table-bordered table-hover table-responsive">
+                <thead>
+                    <tr><th>订单编号</th><th>商品编号</th><th>商品价格</th><th>商品数量</th><th>总价</th><th>状态</th><th>创建时间</th><th>操作</th></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="order in orders">
+                        <td>{{order.OrderId}}</td>
+                        <td>{{order.ItemId}}</td>
+                        <td>{{order.OrderPrice}}</td>
+                        <td>{{order.OrderNum}}</td>
+                        <td>{{order.OrderPrice * order.OrderNum}}</td>
+                        <td>{{order.OrderStatus}}</td>
+                        <td>{{order.OrderCreateTime}}</td>
+                        <td v-if="order.OrderStatus=='未支付'"><button class="btn btn-primary" v-on:click="pay" v-bind:name="order.OrderId">支付</button></td>
+                        <td v-else=""></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="collectAPP" class="col-md-12 col-sm-12 col-lg-12">
+        <div class="row" data-toggle="collapse" data-target="#collectList">
+            <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6"><h2>我的收藏</h2></div>
+            <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6 text-right">
+                <h2><a href="javascript:void(0);"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></h2>
+            </div>
+            <div class="col-md-12"><hr /></div>
+        </div>
+        <!-- 上面的div是折叠块的打开关闭界面, 下面的div是折叠块(默认折叠)-->
+        <div id="collectList" class="collapse">
+            <ul class="list-group">
+                <li v-for="collect in collects" class="list-group-item">
+                    <div class="row">
+                        <div class="col-sm-7">
+                            <a v-bind:href="collect.Href" target="_blank">
+                                <img v-bind:src="collect.ItemPicture" class="img-responsive" alt="商品图片" />
+                            </a>
+                        </div>
+                        <div class="col-sm-5">
+                            <span>商品编号: {{collect.ItemId}}</span><br />
+                            <span>商品名称: {{collect.ItemName}}</span><br />
+                            <span>商品价格: {{collect.ItemPrice}}</span><br />
+                            <span>商品销量: {{collect.ItemSales}}</span><br />
+                            <span>商品库存: {{collect.ItemNumber}}</span><br />
+                            <span>收藏时间: {{collect.CollectTime}}</span><br />
+                            <button class="btn btn-danger" v-on:click="delCollect" v-bind:name="collect.ItemId">取消收藏</button>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="profileAPP" class="col-md-12 col-sm-12 col-lg-12">
+        <div class="row" data-toggle="collapse" data-target="#profile">
+            <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6"><h2>个人信息</h2></div>
+            <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6 text-right">
+                <h2><a href="javascript:void(0);"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></h2>
+            </div>
+            <div class="col-md-12"><hr /></div>
+        </div>
+        <!-- 上面的div是折叠块的打开关闭界面, 下面的div是折叠块(默认折叠)-->
+        <div id="profile" class="collapse">
+            @using (Html.BeginForm("Register", "Users", FormMethod.Post, new { @class = "formhorizontal", role = "form" })) {
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Username, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{
+                            Dictionary<string, object> attr = new Dictionary<string, object>();
+                            attr.Add("class", "form-control");
+                            attr.Add("v-model", "Username");<!-- 绑定vue-->
+                            @Html.TextBoxFor(m => m.Username, attr);
+                        }
+                    </div>
+                </div>
+                <div class="form-group" style="display: none">
+                    <!--原先的密码段隐藏-->
+                    @Html.LabelFor(m => m.Passwd, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "Passwd"; }
+                        @Html.TextBoxFor(m => m.Passwd, attr)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Email, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "Email"; }
+                        @Html.TextBoxFor(m => m.Email, attr)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="OldPasswd" class="control-label col-sm-2">旧密码</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" id="OldPasswd" v-model="OldPasswd" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="NewPasswd" class="control-label col-sm-2">新密码</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" id="NewPasswd" v-model="NewPasswd" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="NewPasswdConfirm" class="control-label col-sm-2">新密码确认</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" id="NewPasswdConfirm" v-model="NewPasswdConfirm" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Birthday, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "Birthday"; }
+                        @Html.TextBoxFor(m => m.Birthday, attr)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.QQNumber, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "QQNumber"; }
+                        @Html.TextBoxFor(m => m.QQNumber, attr)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.PhoneNumber, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "PhoneNumber"; }
+                        @Html.TextBoxFor(m => m.PhoneNumber, attr)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Address, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "Address"; }
+                        @Html.TextBoxFor(m => m.Address, attr)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Level, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "Level"; }
+                        @Html.TextBoxFor(m => m.Level, attr)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.RegisterTime, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "RegisterTime"; }
+
+                        @Html.TextBoxFor(m => m.RegisterTime, attr)
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Captcha, new { @class = "col-sm-2 control-label" })
+                    <div class="col-sm-10">
+                        @{ attr["v-model"] = "Captcha"; }
+                        @Html.TextBoxFor(m => m.Captcha, attr)
+                        @Html.ValidationMessageFor(m => m.Captcha)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <img id="captchaImg" src="/Users/Captcha" alt="验证码" />
+                    <a href="javascript:void(0)" onclick="$('#captchaImg')[0].src=$('#captchaImg')[0].src+'?';">看不清楚?换一张</a>
+                    <button type="button" v-on:click="update" class="btn btn-primary">更新信息</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 模态对话框 购物车数量-->
+<div class="modal fade" id="cartNumberModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">请输入修改后的数量</h4>
+            </div>
+            <div class="modal-body">
+                <input type="number" min="1" max="100000" id="cartNumberModalInput" class="form-control" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="cartNumberModalButton">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模态对话框 支付页面-->
+<div class="modal fade" id="payModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">支付!</h4>
+            </div>
+            <div class="modal-body">
+                <img class="img-responsive" src="#" alt="这是一张收款码!" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="payModalButton">支付成功</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(".collapse").on('show.bs.collapse', function (e) {// 监听展开事件
+        var par = e.currentTarget.parentElement;
+        // 判断是不是属于这四个app
+        if (par.id === "profileAPP" || par.id === "collectAPP" || par.id === "cartAPP" || par.id === "orderAPP") {
+            let dom = par.firstElementChild.children[1].firstElementChild.firstElementChild.firstElementChild;
+            dom.className = "fa fa-angle-double-down";
+        }
+    });
+    $(".collapse").on('hide.bs.collapse', function (e) {
+        var par = e.currentTarget.parentElement;
+        // 判断是不是属于这四个app
+        if (par.id === "profileAPP" || par.id === "collectAPP" || par.id === "cartAPP" || par.id === "orderAPP") {
+            let dom = par.firstElementChild.children[1].firstElementChild.firstElementChild.firstElementChild;
+            dom.className = "fa fa-angle-double-right";
+        }
+    });
+    function testNull(x) { // 判断是不是空的函数
+        return x == null || x == undefined || x === "";
+    }
+    var profileAPP = new Vue({
+        el: "#profileAPP",
+        data: {
+            Username: $("#Username").val(),
+            Passwd: $("#Passwd").val(),
+            Email: $("#Email").val(),
+            Birthday: $("#Birthday").val(),
+            QQNumber: $("#QQNumber").val(),
+            PhoneNumber: $("#PhoneNumber").val(),
+            Address: $("#Address").val(),
+            Level: $("#Level").val(),
+            RegisterTime: $("#RegisterTime").val(),
+            Captcha: null,
+            OldPasswd: null,// 用户输入的原先的密码,用于确认用户身份
+            NewPasswd: null, // 用户输入的将要更新的密码
+            NewPasswdConfirm: null,
+        },
+        mounted: function () {//实例创建后执行的函数
+            $("#Username").attr("readonly", "true"); // 设置用户名只读
+            $("#RegisterTime").attr("readonly", "true"); // 设置注册时间不可更改
+            if (this.Level == 0) this.Level = "管理员";
+            else this.Level = "普通用户";
+            $("#Level").attr("readonly", "true"); // 设置用户权限不可更改
+        },
+        methods: {
+            update: function () { // 更新用户信息
+                if (testNull(this.Username) || testNull(this.Passwd)) {
+                    toastr.error("表单错误!"); return;
+                }
+                if (testNull(this.Captcha)) {
+                    toastr.error("请填写验证码!"); return;
+                }
+                if (testNull(this.OldPasswd) || this.Passwd !== $.md5(this.OldPasswd)) {
+                    toastr.error("旧密码不匹配!"); return;
+                }
+                if (testNull(this.OldPasswd) || this.NewPasswd !== this.NewPasswdConfirm) {
+                    toastr.error("两次输入的新密码不一致"); return;
+                }
+                if (testNull(this.Email)){
+                    toastr.error("请填写邮箱!"); return;
+                }
+                let post_data = 'Username=@Session["username"]'; // 构建post的数据
+                post_data += "&Passwd=" + $.md5(this.NewPasswd);
+                post_data += "&Email=" + this.Email;
+                post_data += "&Birthday=" + this.Birthday;
+                post_data += "&PhoneNumber=" + this.PhoneNumber;
+                post_data += "&QQNumber=" + this.QQNumber;
+                post_data += "&Address=" + encodeURIComponent(this.Address);
+                post_data += "&Captcha=" + this.Captcha;
+                post_data += "&RegisterTime=" + this.RegisterTime;
+                post_data += "&Level=";
+                if (this.Level == "管理员") post_data += "0";
+                else post_data += "1";
+                axios({//发送post请求
+                    method: "POST",
+                    url: "/Users/Profiles",
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //要用这个编码才能转化为model类的实例
+                    },
+                    data: post_data
+                }).then(function (response) {
+                    profileAPP.$data.Captcha = "";
+                    $('#captchaImg')[0].src = $('#captchaImg')[0].src + '?';//更新验证码
+                    let data = response.data;
+                    if (data.result == "success") {
+                        toastr.success("更新信息成功!");
+                        profileAPP.$data.Passwd = $.md5(profileAPP.$data.NewPasswd);// 更新表单存储的原先密码
+                        profileAPP.$data.OldPasswd = "";
+                        profileAPP.$data.NewPasswd = "";
+                        profileAPP.$data.NewPasswdConfirm = "";
+                    }
+                    else {
+                        toastr.error(JSON.stringify(data.data), "更新失败");
+                    }
+                });/*.catch(function (error) {
+                    toastr.error("未知错误" + JSON.stringify(error), "更新失败");
+                });*/
+            },
+        }
+    });
+    var collectAPP = new Vue({
+        el: "#collectAPP",
+        data: {
+            collects: null,
+        },
+        mounted: function () { // 实例挂载后执行的函数
+            axios({
+                method: "get",
+                url: "/Users/Collect"
+            }).then(function (response) {
+                if (response.status !== 200) {
+                    toastr.error("获取收藏列表失败!");
+                    return;
+                }
+                for (let c of response.data) {
+                    c.Href = "/Item/Detail?item_id=" + c.ItemId;
+                    var s = c.CollectTime;
+                    c.CollectTime = new Date(s.substring(s.indexOf('(') + 1, s.indexOf(')')) / 1);
+                }
+                collectAPP.collects = response.data;// 将获取的收藏列表传给vue 的app
+            });
+        },
+        methods: {
+            delCollect: function (e) {
+                if (confirm("确认取消收藏?") === true) {
+                    const item_id = e.currentTarget.name
+                    axios({
+                        method: "get",
+                        url: "/Users/Collect",
+                        params: {
+                            item_id: item_id,
+                            op: "del"
+                        }
+                    }).then(function (response) {
+                        if (response.data == true) {
+                            toastr.success("取消收藏成功!", "success");
+                            // 列表中删除这个元素
+                            collectAPP.collects = collectAPP.collects.filter(function (collect) { return collect.ItemId != item_id });
+                        }
+                        else {
+                            toastr.error("取消失败", "fail");
+                        }
+                    });
+                }
+            }
+        }
+    });
+    var cartAPP = new Vue({
+        el: "#cartAPP",
+        data: {
+            carts: null,
+        },
+        mounted: function () { // 实例挂载后执行的函数
+            axios({
+                method: "get",
+                url: "/Users/Cart",
+                params: {
+                    op: "list"
+                }
+            }).then(function (response) {
+                if (response.status !== 200 || typeof (response.data) == 'string') {
+                    toastr.error(JSON.stringify(response.data), "获取购物车列表失败!");
+                    return;
+                }
+                for (let c of response.data) {
+                    c.Href = "/Item/Detail?item_id=" + c.ItemId;
+                    var s = c.CartInTime;
+                    c.CartInTime = new Date(s.substring(s.indexOf('(') + 1, s.indexOf(')')) / 1);
+                }
+                cartAPP.carts = response.data;// 将获取的购物车列表传给vue 的app
+            });
+        },
+        methods: {
+            delCart: function (e) {
+                if (confirm("确认删除?") === true) {
+                    const item_id = e.currentTarget.name
+                    axios({
+                        method: "get",
+                        url: "/Users/Cart",
+                        params: {
+                            item_id: item_id,
+                            op: "del"
+                        }
+                    }).then(function (response) {
+                        if (response.data == true) {
+                            toastr.success("删除成功!", "success");
+                            // 列表中删除这个元素
+                            cartAPP.carts = cartAPP.carts.filter(function (cart) { return cart.ItemId != item_id });
+                        }
+                        else {
+                            toastr.error("删除失败" + JSON.stringify(response.data), "fail");
+                        }
+                    });
+                }
+            },
+            setCart: function (e) {
+                $("#cartNumberModal").modal('show');
+                $("#cartNumberModalButton").on('click', function (e1) { // 设置里面的提交函数
+                    let num = 0;
+                    try {
+                        num = Number($("#cartNumberModalInput").val());
+                    } catch (error) {
+                        toastr.error("输入数据不合法!", "Error");
+                        return;
+                    }
+                    if (num < 1) {
+                        toastr.error("输入数据不合法!", "Error");
+                        return;
+                    }
+                    // 发送请求
+                    const item_id = e.target.name;
+                    axios({
+                        method: "get",
+                        url: "/Users/Cart",
+                        params: {
+                            item_id: item_id,
+                            op: "set",
+                            num: num
+                        }
+                    }).then(function (response) {
+                        console.log(response.data);
+                        if (response.data == true) {
+                            toastr.success("修改成功!", "success");
+                            $("#cartNumberModal").modal('hide');
+                            for (let c of cartAPP.carts) {
+                                if (c.ItemId == item_id) c.CartItemNumber = num;
+                            }
+                        }
+                        else {
+                            toastr.error("修改失败" + JSON.stringify(response.data), "Fail");
+                        }
+                    });
+                });
+            }
+        }
+    });
+    var orderAPP = new Vue({
+        el: "#orderAPP",
+        data: {
+            orders: []
+        },
+        mounted: function () {
+            axios({
+                method: "get",
+                url: "/Users/Orders",
+                params: {
+                    op: "list"
+                }
+            }).then(function (response) {
+                if (typeof (response.data) == 'string') {
+                    toastr.error("获取订单列表失败! "+response.data, "Error");
+                }
+                for (var x of response.data) {
+                    let s = x.OrderCreateTime;
+                    // 更新时间表示
+                    x.OrderCreateTime = new Date(s.substring(s.indexOf('(') + 1, s.indexOf(')')) / 1);
+                }
+                orderAPP.orders = response.data;
+            });
+        },
+        methods: {
+            pay: function (e) {
+                const orderId = e.target.name;
+                $("#payModal").modal();
+                $("#payModalButton").on('click', function (ee) {
+                    axios({
+                        method: "get",
+                        url: "/Users/Orders",
+                        params: {
+                            op: "pay",
+                            order_id: orderId
+                        }
+                    }).then(function (response) {
+                        if (response.data == true) {
+                            toastr.success("购买成功!", "success");
+                            $("#payModal").modal('hide');//关闭模态框
+                            for (let o of orderAPP.orders) {
+                                if (o.OrderId == orderId) o.OrderStatus = "已支付";
+                            }
+                        }
+                        else {
+                            toastr.error("购买失败! " + JSON.stringify(response.data), "error");
+                        }
+                    });
+                });
+            }
+        }
+    });
+    function buy(dom) {
+        const item_id = dom.name;
+        axios({
+            method: "get",
+            url: "/Users/Orders",
+            params: {
+                op: "add",
+                item_id: item_id
+            }
+        }).then(function (response) {
+            if (typeof (response.data) !== "object") {
+                toastr.error(JSON.stringify(response.data), "新建订单失败");
+                return;
+            }
+            // 将新增的订单添加到订单表格里
+            let s = response.data.OrderCreateTime;
+            // 更新时间表示
+            response.data.OrderCreateTime = new Date(s.substring(s.indexOf('(') + 1, s.indexOf(')')) / 1);
+            orderAPP.orders.push(response.data);
+
+            // 将购物车里面对应的删除
+            cartAPP.carts = cartAPP.carts.filter(function (cart) { return cart.ItemId != item_id });
+            toastr.success("新建订单成功!", "success");
+        });
+    }
+</script>
+@Scripts.Render("~/Bundles/encrypt")<!-- 引入md5 函数-->

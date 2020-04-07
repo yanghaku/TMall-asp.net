@@ -1,0 +1,267 @@
+﻿@model TMall.Models.ItemModel
+@{
+    ViewBag.Title = Model.ItemName + " -- 商品详情";
+}
+
+<div class="row">
+    <div class="col-md-8 col-md-offset-2">
+        <div class="row">
+            <div class="col-md-6"><img src="@Model.ItemPicture" alt="Picture" /></div>
+            <div class="col-md-6">
+                <h2>@Model.ItemName</h2>
+                <p>
+                    <span>单价: @Model.ItemPrice</span><br />
+                    <span>库存: @Model.ItemNumber</span><br />
+                    <span>销量: @Model.ItemSales</span><br />
+                </p>
+                <button class="btn btn-primary" onclick="$('#myModal').modal();">加入购物车</button>
+                <button class="btn btn-primary" onclick="changeCollect(this)">
+                    @if (TMall.Respository.Users.JudgeCollect((string)Session["username"], Model.ItemId)) {
+                        <span><i class="fa fa-heart" aria-hidden="true"></i>取消收藏</span>
+                    } else {
+                        <span><i class="fa fa-heart-o" aria-hidden="true"></i>收藏</span>
+                    }
+                </button>
+                @if (TMall.Respository.Users.isAdmin((string)Session["username"])) {
+                    <button class="btn btn-danger" onclick="javascrtpt: window.location.href = '/Item/Edit?item_id=@Model.ItemId';">编辑</button>
+                    <button class="btn btn-danger" onclick="deleteItem(@Model.ItemId)">删除</button>
+                }
+            </div>
+            <div class="col-md-12" style="border:dashed 1px red">
+                <h3>详情</h3>
+                <!-- markdown 渲染 -->
+                @{
+                    MarkdownSharp.Markdown m = new MarkdownSharp.Markdown();
+                    var result = new MvcHtmlString(m.Transform(Model.ItemText));
+                    @result
+                }
+            </div>
+            <div class="col-md-12" id="commentAPP">
+                <!-- comments area-->
+                <div class="form-group">
+                    <!-- 首先第一个div 是商品的评论框, 用于添加新的评论 -->
+                    <textarea v-model="commentText" class="form-control" placeholder="我也评论一下!" id="commentInsertText"></textarea>
+                    <p>
+                        <label for="commentInsertScore">商品打分</label>
+                        <input v-model="commentScore" class="form-control" type="number" max="5" min="1" id="commentInsertScore" />
+                        <button class="btn btn-success" id="commentInsertSubmit" v-on:click="submitComment">发表评论</button>
+                    </p>
+                </div>
+                <div>
+                    <!-- 然后第二个div是 商品的评论列表, 用于显示已经存在的评论 -->
+                    <h2>评论列表</h2><hr />
+                    <div v-if="comments!==null && comments.length!==0">
+                        <!-- 如果存在评论就显示评论列表-->
+                        <p>
+                        统计: <ul class="list-inline">
+                            <li>1分: {{scoreNums[1]/comments.length*100}}%</li> |
+                            <li>2分: {{scoreNums[2]/comments.length*100}}%</li> |
+                            <li>3分: {{scoreNums[3]/comments.length*100}}%</li> |
+                            <li>4分: {{scoreNums[4]/comments.length*100}}%</li> |
+                            <li>5分: {{scoreNums[5]/comments.length*100}}%</li>
+                        </ul>
+                        </p>
+                        <div style="margin-top:10px; border: 1px dashed red" v-for="comment in comments">
+                            <!-- 评论列表 -->
+                            <h3>评论者: {{comment.Username}}</h3>
+                                <p><i v-for="star in comment.stars" v-bind:class="star" aria-hidden="true"></i></p><!-- 评论的星星 -->
+                                <span>time: {{comment.ItemCommentTime}}</span>
+                            <div style="border: 1px dashed red" v-html="comment.ItemCommentText">
+                                <!-- v-html" 将会使这个变量显示原始html-->
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <h3>暂无评论</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模态对话框 -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">请输入增加进购物车的数量</h4>
+            </div>
+            <div class="modal-body">
+                <input type="number" min="1" max="100000" id="myModalInput" class="form-control"/>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="addCart()">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Comment App 对应的vue实例
+    var commentAPP = new Vue({
+        el: "#commentAPP",
+        data: {
+            comments: null,
+            scoreNums: [0,0,0,0,0,0],
+            commentText: null,//这两个是表单上的数据绑定
+            commentScore: null
+        },
+        mounted: function () {// 实例挂载后调用的函数,利用它来初始化评论列表
+            axios.get("/Item/Comment?item_id=@Model.ItemId")
+            .then(function (response) {
+                commentAPP.comments = response.data;// 返回的评论列表
+                for (let comment of commentAPP.comments) {// 预处理一下
+                    comment.ItemCommentText = marked(comment.ItemCommentText);//markdown 渲染一下
+                    commentAPP.scoreNums[comment.ItemCommentScore] += 1;
+                    comment.stars = [];
+                    for (let i = 1; i < 6; ++i) {
+                        if (i <= comment.ItemCommentScore) comment.stars.push("fa fa-star");
+                        else comment.stars.push("fa fa-star-o");
+                    }
+                    let str = comment.ItemCommentTime;
+                    comment.ItemCommentTime = new Date(str.substring(str.indexOf('(') + 1, str.indexOf(')')) / 1);
+                }
+            }).catch(function (error) {
+                toastr.error(JSON.stringify(error),"获取评论失败");
+            });
+        },
+        methods: {
+            submitComment: function () { // 提交评论事件
+                if (commentAPP.commentText === null) {
+                    toastr.warning("评论不能为空!");
+                    return;
+                }
+                if (commentAPP.commentScore === null) {
+                    toastr.warning("分数不能为空!");
+                    return;
+                }
+                $("#commentInsertSubmit").attr({ "disabled": "disabled" });// 禁用按钮, 防止重复发送
+                let post_data = "ItemId=@Model.ItemId&ItemCommentTime="; // 要注意变量名相同, 才能转化为model类的实例
+                const date = new Date();
+                post_data += date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate() + "%20" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+                post_data += "&ItemCommentScore=" + commentAPP.commentScore;
+                post_data += "&ItemCommentText=" + encodeURIComponent(commentAPP.commentText);
+                axios({ // 发送post请求
+                    method: "POST",
+                    url: "/Item/Comment",
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //要用这个编码才能转化为model类的实例
+                    },
+                    data: post_data
+                }).then(function (response) {
+                    if (response.data === "success") {//增加成功!
+                        let comment = {Username: "@Session["username"]" }; // 生成新的评论加载到dom中
+                        comment.ItemCommentText = marked(commentAPP.commentText);//markdown 渲染
+                        comment.ItemCommentScore = commentAPP.commentScore;
+                        comment.ItemCommentTime = new Date();
+                        ++commentAPP.scoreNums[Number(commentAPP.commentScore)  ];
+                        comment.stars = [];
+                        for (let i = 1; i < 6; ++i) {
+                            if (i <= comment.ItemCommentScore) comment.stars.push("fa fa-star");
+                            else comment.stars.push("fa fa-star-o");
+                        }
+                        commentAPP.comments.push(comment);
+                        commentAPP.commentText = "";// 清空输入框
+                        toastr.success("增加评论成功");
+                    }
+                    else {
+                        toastr.error(JSON.stringify(response), "评论增加失败");
+                    }
+                    $("#commentInsertSubmit").removeAttr("disabled");//恢复按钮
+                }).catch(function (error) { // 如果出错就把错误显示出来
+                    toastr.error(JSON.stringify(error), "Error");
+                    $("#commentInsertSubmit").removeAttr("disabled");
+                });
+            }
+        }
+    });
+</script>
+<script>
+    function deleteItem (item_id){
+        if (item_id === null || item_id === undefined) return;
+        if (confirm("您确认要删除吗?") !== true) return;
+        $.ajax({ //mvc后台能判断出ajax异步请求
+            url: "/Item/Delete?item_id=" + item_id,
+            type: "GET",
+            success: function (data) {
+                if (response.data === "404 Not Found!") {
+                    toastr.error("无法找到您想要删除的商品", "404");
+                } else if (response.data === "Delete success!") {
+                    toastr.success("删除成功, 页面马上跳转", "success");
+                    setTimeout(function () {
+                        window.location.href = "/";
+                    }, 1000);
+                }
+                else {
+                    toastr.error("删除失败,未知错误!", "fail");
+                }
+            },
+            error: function (data) {
+                if (data.status === 401) {
+                    toastr.error("您不是管理员账户, 没有权限删除", "未授权");
+                }
+                else {
+                    toastr.error("删除失败,未知错误!", "fail");
+                }
+            }
+        });
+    }
+
+    function changeCollect(dom) {
+        var oper;
+        var newHTML;
+        var msg;
+        if (dom.innerHTML.indexOf("取消") === -1) { // 没有取消两个字,就是还没有收藏
+            oper = "add";
+            newHTML = '<span><i class="fa fa-heart" aria-hidden="true"></i>取消收藏</span>'
+            msg = "收藏"; 
+        }
+        else {
+            oper = "del";
+            newHTML = '<span><i class="fa fa-heart-o" aria-hidden="true"></i>收藏</span>'
+            msg = "取消收藏";
+        }
+        axios({
+            method: "get",
+            url: "/Users/Collect",
+            params: {
+                item_id: @Model.ItemId,
+                op: oper
+            }
+        }).then(function (response) {
+            if (response.data == true) {
+                toastr.success(msg + "成功!", "success");
+                dom.innerHTML = newHTML;
+            }
+            else {
+                toastr.error(msg + "失败", "fail");
+            }
+        });
+    }
+    function addCart() {
+        let num = Number($("#myModalInput").val());
+        if (typeof (num) != 'number' || num < 1) {
+            toastr.warning("数量不合法!");
+            return;
+        }
+        axios({ // 发送请求.
+            method: "get",
+            url: "/Users/Cart",
+            params: {
+                op: "add",
+                item_id: @Model.ItemId,
+                num: num
+            }
+        }).then(function (response) {
+            if (response.data === true) {
+                toastr.success("增加成功!");
+                $("#myModal").modal('hide');
+            }
+            else {
+                toastr.error(JSON.stringify(response.data), "增加失败!");
+            }
+        });
+    }
+</script>

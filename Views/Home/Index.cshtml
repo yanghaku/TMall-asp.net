@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "TMall Home";
+}
+
+@model List<TMall.Models.ItemCategoryModel>
+
+<ul>
+@if (Model != null) {
+    foreach (var c in Model) {
+        <li><a href="/Item/List?category_id=@c.ItemCategoryId" target="_blank">@c.ItemCategoryName</a></li>
+    }
+} else {
+    <li><h2>No Item Category</h2></li>
+}
+</ul>

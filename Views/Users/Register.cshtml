@@ -1,0 +1,51 @@
+﻿@{
+    ViewBag.Title = "Register";
+}
+
+
+@model TMall.Models.UserProfileModel
+
+@using (Html.BeginForm("Register", "Users", FormMethod.Post, new { onsubmit = "var t=$('#Passwd').val();$('#Passwd').val($.md5(t));" })) {
+    @Html.LabelFor(m => m.Username)
+    @Html.TextBoxFor(m => m.Username)
+    @Html.ValidationMessageFor(m => m.Username)
+    <br />
+    @Html.LabelFor(m => m.Passwd)
+    @Html.PasswordFor(m => m.Passwd)
+    @Html.ValidationMessageFor(m => m.Passwd)
+    <br />
+    @Html.LabelFor(m => m.Email)
+    @Html.TextBoxFor(m => m.Email)
+    @Html.ValidationMessageFor(m => m.Email)
+    <br />
+    @Html.LabelFor(m => m.Birthday)
+    @Html.TextBoxFor(m => m.Birthday)
+    @Html.ValidationMessageFor(m => m.Birthday)
+    <br />
+    @Html.LabelFor(m => m.QQNumber)
+    @Html.TextBoxFor(m => m.QQNumber)
+    @Html.ValidationMessageFor(m => m.QQNumber)
+    <br />
+    @Html.LabelFor(m => m.PhoneNumber)
+    @Html.TextBoxFor(m => m.PhoneNumber)
+    @Html.ValidationMessageFor(m => m.PhoneNumber)
+    <br />
+    @Html.LabelFor(m => m.Address)
+    @Html.TextBoxFor(m => m.Address)
+    @Html.ValidationMessageFor(m => m.Address)
+    <br />
+    @Html.LabelFor(m => m.Captcha)
+    @Html.TextBoxFor(m => m.Captcha)
+    @Html.ValidationMessageFor(m => m.Captcha)
+    <br />
+    <img src="~/Users/Captcha" alt="Captcha" />
+    <input hidden="hidden" name="redirectURL" value="@ViewData["redirectURL"]" />
+
+    <input type="submit" value="注册" />
+
+
+}
+<hr />
+@Html.ActionLink("已有账号?马上登录", "Login", "Users", new { redirectURL = Request["redirectURL"] }, new { })
+
+@Scripts.Render("~/Bundles/encrypt")
