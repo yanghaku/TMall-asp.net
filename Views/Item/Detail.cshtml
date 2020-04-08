@@ -4,81 +4,90 @@
 }
 
 <div class="row">
-    <div class="col-md-8 col-md-offset-2">
-        <div class="row">
-            <div class="col-md-6"><img src="@Model.ItemPicture" alt="Picture" /></div>
-            <div class="col-md-6">
-                <h2>@Model.ItemName</h2>
+    <div class="col-md-5"><img src="@Model.ItemPicture" class="img-responsive line" alt="Picture" /></div>
+    <div class="col-md-6" style="background-color: white">
+        <h2>@Model.ItemName</h2>
+        <h3 style="color: red">¥ @Model.ItemPrice</h3>
+        <ul class="list-group">
+            <li class="list-group-item list-group-item-danger">库存: @Model.ItemNumber</li>
+            <li class="list-group-item list-group-item-success">销量: @Model.ItemSales</li>
+            <li class="list-group-item list-group-item-info">所属类别: @TMall.Respository.Item.GetItemCategoryName(Model.ItemCategoryId)</li>
+            <li class="list-group-item list-group-item-warning">最后更新时间: @Model.LastUpdateTime</li>
+            <li class="list-group-item list-group-item-text">关键词: @Model.ItemKeyword</li>
+        </ul>
+        <p style="padding: 20px">
+            <button class="btn btn-primary" onclick="$('#myModal').modal();">加入购物车</button>
+            <button class="btn btn-primary" onclick="changeCollect(this)">
+                @if (TMall.Respository.Users.JudgeCollect((string)Session["username"], Model.ItemId)) {
+                    <span><i class="fa fa-heart" aria-hidden="true"></i>取消收藏</span>
+                } else {
+                    <span><i class="fa fa-heart-o" aria-hidden="true"></i>收藏</span>
+                }
+            </button>
+            @if (TMall.Respository.Users.isAdmin((string)Session["username"])) {
+                <button class="btn btn-danger" onclick="javascrtpt: window.location.href = '/Item/Edit?item_id=@Model.ItemId';">编辑</button>
+                <button class="btn btn-danger" onclick="deleteItem(@Model.ItemId)">删除</button>
+            }
+        </p>
+    </div>
+    <div class="col-md-12" style="margin: 20px 0;">
+        <h2>商品详情</h2><hr/>
+        <div style="background-color: white;">
+        <!-- markdown 渲染 -->
+        @{
+            MarkdownSharp.Markdown m = new MarkdownSharp.Markdown();
+            var result = new MvcHtmlString(m.Transform(Model.ItemText));
+            @result
+        }
+        </div>
+    </div>
+
+    <div class="col-md-12" id="commentAPP">
+        <!-- comments area-->
+        <div class="form-group">
+            <h2>商品评论</h2><hr/>
+            <!-- 首先第一个div 是商品的评论框, 用于添加新的评论 -->
+            <textarea v-model="commentText" class="form-control" placeholder="我也评论一下!" rows="8" id="commentInsertText"></textarea>
+            <div class="form-inline" style="margin-top: 7px">
+                <label for="commentInsertScore">商品打分: </label>
+                <input v-model="commentScore" class="form-control" type="number" max="5" min="1" id="commentInsertScore" />
+                <button class="btn btn-success pull-right" id="commentInsertSubmit" v-on:click="submitComment">发表评论</button>
+            </div>
+        </div>
+        <div style="padding-top: 6px;padding-bottom: 13px">
+            <!-- 然后第二个div是 商品的评论列表, 用于显示已经存在的评论 -->
+            <h2>评论列表</h2><hr />
+            <div v-if="comments!==null && comments.length!==0">
+                <!-- 如果存在评论就显示评论列表-->
                 <p>
-                    <span>单价: @Model.ItemPrice</span><br />
-                    <span>库存: @Model.ItemNumber</span><br />
-                    <span>销量: @Model.ItemSales</span><br />
+                <ul class="list-inline" style="font-size: larger;margin-left: 3px">
+                    <li class="list-group-item">1分: {{scoreNums[1]/comments.length*100}}%</li>
+                    <li class="list-group-item">2分: {{scoreNums[2]/comments.length*100}}%</li>
+                    <li class="list-group-item">3分: {{scoreNums[3]/comments.length*100}}%</li>
+                    <li class="list-group-item">4分: {{scoreNums[4]/comments.length*100}}%</li>
+                    <li class="list-group-item">5分: {{scoreNums[5]/comments.length*100}}%</li>
+                    <li class="list-group-item">平均分值: {{(1*scoreNums[1]+2*scoreNums[2]+3*scoreNums[3]+4*scoreNums[4]+5*scoreNums[5])/comments.length}}</li>
+                </ul>
                 </p>
-                <button class="btn btn-primary" onclick="$('#myModal').modal();">加入购物车</button>
-                <button class="btn btn-primary" onclick="changeCollect(this)">
-                    @if (TMall.Respository.Users.JudgeCollect((string)Session["username"], Model.ItemId)) {
-                        <span><i class="fa fa-heart" aria-hidden="true"></i>取消收藏</span>
-                    } else {
-                        <span><i class="fa fa-heart-o" aria-hidden="true"></i>收藏</span>
-                    }
-                </button>
-                @if (TMall.Respository.Users.isAdmin((string)Session["username"])) {
-                    <button class="btn btn-danger" onclick="javascrtpt: window.location.href = '/Item/Edit?item_id=@Model.ItemId';">编辑</button>
-                    <button class="btn btn-danger" onclick="deleteItem(@Model.ItemId)">删除</button>
-                }
-            </div>
-            <div class="col-md-12" style="border:dashed 1px red">
-                <h3>详情</h3>
-                <!-- markdown 渲染 -->
-                @{
-                    MarkdownSharp.Markdown m = new MarkdownSharp.Markdown();
-                    var result = new MvcHtmlString(m.Transform(Model.ItemText));
-                    @result
-                }
-            </div>
-            <div class="col-md-12" id="commentAPP">
-                <!-- comments area-->
-                <div class="form-group">
-                    <!-- 首先第一个div 是商品的评论框, 用于添加新的评论 -->
-                    <textarea v-model="commentText" class="form-control" placeholder="我也评论一下!" id="commentInsertText"></textarea>
-                    <p>
-                        <label for="commentInsertScore">商品打分</label>
-                        <input v-model="commentScore" class="form-control" type="number" max="5" min="1" id="commentInsertScore" />
-                        <button class="btn btn-success" id="commentInsertSubmit" v-on:click="submitComment">发表评论</button>
-                    </p>
-                </div>
-                <div>
-                    <!-- 然后第二个div是 商品的评论列表, 用于显示已经存在的评论 -->
-                    <h2>评论列表</h2><hr />
-                    <div v-if="comments!==null && comments.length!==0">
-                        <!-- 如果存在评论就显示评论列表-->
-                        <p>
-                        统计: <ul class="list-inline">
-                            <li>1分: {{scoreNums[1]/comments.length*100}}%</li> |
-                            <li>2分: {{scoreNums[2]/comments.length*100}}%</li> |
-                            <li>3分: {{scoreNums[3]/comments.length*100}}%</li> |
-                            <li>4分: {{scoreNums[4]/comments.length*100}}%</li> |
-                            <li>5分: {{scoreNums[5]/comments.length*100}}%</li>
-                        </ul>
-                        </p>
-                        <div style="margin-top:10px; border: 1px dashed red" v-for="comment in comments">
-                            <!-- 评论列表 -->
-                            <h3>评论者: {{comment.Username}}</h3>
-                                <p><i v-for="star in comment.stars" v-bind:class="star" aria-hidden="true"></i></p><!-- 评论的星星 -->
-                                <span>time: {{comment.ItemCommentTime}}</span>
-                            <div style="border: 1px dashed red" v-html="comment.ItemCommentText">
-                                <!-- v-html" 将会使这个变量显示原始html-->
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else>
-                        <h3>暂无评论</h3>
+                <div style="margin-top:10px;background-color: white; padding: 10px" v-for="comment in comments">
+                    <!-- 评论列表 -->
+                    <h4><span style="margin-right: 5px">评论者: {{comment.Username}}</span>
+                        <i v-for="star in comment.stars" style="color: gold" v-bind:class="star" aria-hidden="true"></i><!-- 评论的星星 -->
+                        <span class="small pull-right">time: {{comment.ItemCommentTime}}</span>
+                    </h4>
+                    <hr style="border-color: aqua;margin-top:0"/>
+                    <div v-html="comment.ItemCommentText">
+                        <!-- v-html" 将会使这个变量显示原始html-->
                     </div>
                 </div>
+            </div>
+            <div v-else style="background-color: white; padding: 20px">
+                <h3>暂无评论</h3>
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- 模态对话框 -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -103,7 +112,7 @@
     var commentAPP = new Vue({
         el: "#commentAPP",
         data: {
-            comments: null,
+            comments: [],
             scoreNums: [0,0,0,0,0,0],
             commentText: null,//这两个是表单上的数据绑定
             commentScore: null
@@ -186,9 +195,9 @@
             url: "/Item/Delete?item_id=" + item_id,
             type: "GET",
             success: function (data) {
-                if (response.data === "404 Not Found!") {
+                if (data === "404 Not Found!") {
                     toastr.error("无法找到您想要删除的商品", "404");
-                } else if (response.data === "Delete success!") {
+                } else if (data === "Delete success!") {
                     toastr.success("删除成功, 页面马上跳转", "success");
                     setTimeout(function () {
                         window.location.href = "/";

@@ -78,7 +78,7 @@ namespace TMall.Controllers {
 
 		// 登录提交页面
 		[HttpPost]
-		public ActionResult Login(TMall.Models.UserLoginModel loginModel,bool? remember,string redirectURL) {
+		public ActionResult Login(TMall.Models.UserLoginModel loginModel,string remember,string redirectURL) {
 			if(!string.IsNullOrEmpty(redirectURL))
 				ViewData["redirectURL"] = redirectURL;// 将重定向的url传递到视图里
 			if (ModelState.IsValid) { //看每个域是否都有效
@@ -90,7 +90,8 @@ namespace TMall.Controllers {
 					// 将登录信息写到Session中
 					Session.Add("username",loginModel.Username);
 
-					bool re = remember ?? false;
+					bool re = false;
+					if (!string.IsNullOrEmpty(remember) && remember.Equals("on")) re = true;
 					if (re) {// 如果勾选了记住密码, 就保存7天cookie
 						HttpCookie cookie = new HttpCookie("authorizeUser");
 						cookie.Expires = DateTime.Now.Add(new TimeSpan(7, 0, 0, 0));// 设置过期时间为7天后

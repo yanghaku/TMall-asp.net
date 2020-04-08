@@ -1,15 +1,34 @@
 ﻿@{
-    ViewBag.Title = "TMall Home";
+    ViewBag.Title = "TMall 首页";
 }
 
 @model List<TMall.Models.ItemCategoryModel>
 
-<ul>
 @if (Model != null) {
     foreach (var c in Model) {
-        <li><a href="/Item/List?category_id=@c.ItemCategoryId" target="_blank">@c.ItemCategoryName</a></li>
+        var items = TMall.Respository.Item.GetTopSaleItems(c.ItemCategoryId, 4);
+        if (items != null && items.Count > 0) {
+            <div class="row">
+            <div class="col-md-12 col-sm-12" style="padding-top: 20px">
+                <h3><a href="/Item/List?category_id=@c.ItemCategoryId" target="_blank">@c.ItemCategoryName
+                    <span class="pull-right">more <i class="fa fa-angle-double-right"></i></span></a></h3>
+                <hr />
+            </div>
+            @foreach (var item in items) {
+                <div class="col-md-3 col-sm-3 col-lg-3" style="padding: 0;font-size: larger; color: black">
+                    <div class="line text-center" style="background-color: white; margin: 5px">
+                        <a href="/Item/Detail?item_id=@item.ItemId" target="_blank">
+                            <img src="@item.ItemPicture" class="img-responsive" />
+                            <span style="color: black">@item.ItemName</span>
+                        </a>
+                        <br /><span style="color: red;font-size: xx-large">¥ @item.ItemPrice</span>
+                        <br /><span>销量: @item.ItemSales</span>  <span>库存: @item.ItemNumber</span>
+                    </div>
+                </div>
+            }
+            </div>
+        }
     }
 } else {
-    <li><h2>No Item Category</h2></li>
+    <h2 class="text-center text-danger">No Item Category</h2>
 }
-</ul>

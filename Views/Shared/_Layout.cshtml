@@ -37,6 +37,9 @@
         hr{
             border-top: 1px solid #1338c9
         }
+        .line:hover{
+            border: 1px solid red;
+        }
     </style>
 </head>
 <body style="background-color: #f5f5f5">
@@ -57,12 +60,12 @@
                         <li>@Html.ActionLink("主页", "Index", "Home")</li>
                         <li>@Html.ActionLink("关于", "About", "Home")</li>
                     </ul>
-                    <form role="form" class="navbar-form navbar-left">
+                    <div class="navbar-form navbar-left">
                         <div class="form-group">
                             <input type="text" class="form-control" placeholder="Search" />
-                            <button type="submit" class="btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+                            <button type="button" onclick="toastr.warning('搜索功能开发中...');" class="btn"><i class="fa fa-search" aria-hidden="true"></i></button>
                         </div>
-                    </form>
+                    </div>
                     <ul class="nav navbar-nav navbar-right">
                         @if (Session["username"] == null) {//未登录
                             <li>@Html.ActionLink("登录", "Login", "Users", new { redirectURL = Request.Url.PathAndQuery }, new { })</li>
@@ -76,7 +79,7 @@
                                 <a href="javascript:void(0);" role="button" class="dropdown-toggle" data-toggle="dropdown">
                                     <span><i class="fa fa-angle-down"></i>欢迎 @Session["username"]</span>
                                 </a>
-                                <ul role="menu" class="dropdown-menu" aria-labelledby="dLabel">
+                                <ul role="menu" class="dropdown-menu" aria-labelledby="dLabel" style="background-color: ghostwhite">
                                     <li><a href="/Users/Profiles#profileAPP">个人中心</a></li>
 
                                     @if (TMall.Respository.Users.isAdmin((string)Session["username"])) {
@@ -102,7 +105,8 @@
                 <h4><span class="pull-left"><i class="fa fa-heart"></i>为您推荐</span>
                 <span class="pull-right"><a href="javascript:void(0);" onclick="change();">换一批</a></span></h4>
             </div>
-            <div class="col-md-2 col-sm-6 col-lg-2 col-xs-6" v-for="display in displays" style="">
+            <div v-if="displays.length>0">
+            <div class="col-md-2 col-sm-6 col-lg-2 col-xs-6 line" v-for="display in displays">
                 <div class="text-center" style="display: block; background-color: floralwhite; margin-top: 10px">
                     <a v-bind:href="display.Href" target="_blank">
                     <img v-bind:src="display.ItemPicture" alt="picture" class="img-responsive"/>
@@ -111,13 +115,17 @@
                     <span style="font-size: larger; color: crimson">{{display.ItemPrice}}</span>
                 </div>
             </div>
+            </div>
+            <div v-else>
+                <h3 class="text-center text-danger">No Recommends</h3>
+            </div>
         </div>
         <hr/>
         }
     </div>
-    <footer class="text-center" style="color: white; background-color: black; font-size: larger">
+    <footer class="text-center" style="color: white; background-color: black; font-size: larger;margin-top: 3px">
         <p>&copy; @DateTime.Now - TMall designed by YB</p>
-        <address style="margin-bottom: 0"><strong>source: <a href="https://github.com/yanghaku/TMall-asp.net" target="_blank">https://github.com/yanghaku/TMall-asp.net</a></strong></address>
+        <address style="margin-bottom: 0"><strong>source: <a style="color: white" href="https://github.com/yanghaku/TMall-asp.net" target="_blank">https://github.com/yanghaku/TMall-asp.net</a></strong></address>
     </footer>
     @if (Session["username"] != null) {
     <script>
@@ -133,6 +141,7 @@
                     url: "/Item/Recommend",
                 }).then(function (response) {
                     let l = response.data;
+                    if (l.length <= 0)return;
                     for (let item of l) {
                         item.Href = "/Item/Detail?item_id=" + item.ItemId;
                         item.ItemPrice = "¥" + item.ItemPrice;
@@ -157,7 +166,6 @@
                 // 先查找, 防止重复
                 if (choice.indexOf(pos) == -1) choice.push(pos);
             }
-            console.log(choice);
             for (let c of choice) {
                 recommendAPP.displays.push(recommendAPP.recommends[c]);
             }

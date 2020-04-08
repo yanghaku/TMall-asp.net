@@ -7,8 +7,10 @@ using TMall.util;
 
 namespace TMall.Respository {
 	public class Item {
+		private static List<Models.ItemCategoryModel> ItemCategoriesCache = null; // 因为商品类型运行期间一般不会变化, 并且不多(<1000), 所以直接缓存起来
+
 		// 查询商品列表
-		public static List<TMall.Models.ItemModel> GetItems(int category,int nowCount,int size,out int totalCount) {
+		public static List<Models.ItemModel> GetItems(int category,int nowCount,int size,out int totalCount) {
 			SqlParameter[] sqlParameter1 = new SqlParameter[] {
 				new SqlParameter("@C",category),
 			};
@@ -22,6 +24,7 @@ namespace TMall.Respository {
 			string sql = "select * from item where item_category_id = @C order by item_id offset @N rows fetch next @S rows only";
 			SqlDataReader sqlData = SqlHelper.ExecuteTable(sql, sqlParameters2);
 			List<Models.ItemModel> items = new List<Models.ItemModel>();
+			if (sqlData == null) return items;
 			while (sqlData.Read()) {
 				Models.ItemModel item = new Models.ItemModel {
 					ItemId = sqlData.GetInt32(0),
@@ -109,9 +112,10 @@ namespace TMall.Respository {
 
 		// 查询商品目录
 		public static List<TMall.Models.ItemCategoryModel> GetItemCategories() {
+			if (ItemCategoriesCache != null) return ItemCategoriesCache; // 如果本地有缓存,直接返回即可
 			SqlDataReader data=SqlHelper.ExecuteTable("select * from item_category",null);
-			if (data == null) return null;
 			List<TMall.Models.ItemCategoryModel> itemCategories = new List<Models.ItemCategoryModel>();
+			if (data == null) return itemCategories;
 			while (data.Read()) {
 				Models.ItemCategoryModel itemCategory = new Models.ItemCategoryModel {
 					ItemCategoryId = data.GetInt32(0),
@@ -120,6 +124,7 @@ namespace TMall.Respository {
 				itemCategories.Add(itemCategory);
 			}
 			data.Close();
+			ItemCategoriesCache = itemCategories; // 将查询的数据作为缓存保存起来
 			return itemCategories;
 		}
 
@@ -127,8 +132,8 @@ namespace TMall.Respository {
 		public static List<TMall.Models.ItemCommentModel> GetItemComments(int item_id) {
 			string sql = $"select * from item_comment where item_id = {item_id}";
 			SqlDataReader data = SqlHelper.ExecuteTable(sql, null);
-			if (data == null) return null;
 			List<Models.ItemCommentModel> comments = new List<Models.ItemCommentModel>();
+			if (data == null) return comments;
 			while (data.Read()) {
 				Models.ItemCommentModel comment = new Models.ItemCommentModel {
 					ItemCommentId = data.GetInt32(0),
@@ -155,6 +160,40 @@ namespace TMall.Respository {
 			};
 			string sql = "insert into item_comment (item_id,username,item_comment_score,item_comment_text,item_comment_time) values(@A,@B,@C,@D,@E)";
 			return 1 == (int)SqlHelper.ExecuteNoQuery(sql,sqlParameters);
+		}
+
+		// 根据商品类型的id获取商品类型的名称
+		public static string GetItemCategoryName(int category_id) {
+			if (ItemCategoriesCache == null) GetItemCategories();
+			foreach(var entry in ItemCategoriesCache) {
+				if (entry.ItemCategoryId == category_id) return entry.ItemCategoryName;
+			}
+			return string.Empty;
+		}
+
+		// 返回某个类型最畅销(热门)的N个物品
+		public static List<Models.ItemModel> GetTopSaleItems(int itemCategoryId,int N) {
+			string sql = $"select top {N} * from item where item_category_id={itemCategoryId} order by item_sales desc";
+			SqlDataReader data = SqlHelper.ExecuteTable(sql, null);
+			List<Models.ItemModel> items = new List<Models.ItemModel>();
+			if (data == null) return items;
+			while (data.Read()) {
+				Models.ItemModel item = new Models.ItemModel {
+					ItemId = data.GetInt32(0),
+					ItemCategoryId = data.GetInt32(1),
+					ItemName = data.GetString(2),
+					ItemPicture = data.GetString(3),
+					ItemText = data.GetString(4),
+					ItemPrice = data.GetDouble(5),
+					ItemSales = data.GetInt32(6),
+					ItemNumber = data.GetInt32(7),
+					ItemKeyword = data.GetString(8),
+					LastUpdateTime = data.GetDateTime(9)
+				};
+				items.Add(item);
+			}
+			data.Close();
+			return items;
 		}
 	}
 }

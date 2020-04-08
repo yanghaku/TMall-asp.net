@@ -4,35 +4,38 @@
 @using Webdiyer.WebControls.Mvc
 @model PagedList<TMall.Models.ItemModel>
 
-
-<h4>total: @ViewData["totalCount"]</h4>
-<div>
-    <ul>
-        @if (Model != null) {
-            foreach (var item in Model) {
-                <li>
-                    <a href="/Item/Detail?item_id=@item.ItemId" target="_blank">
-                        <img src="@item.ItemPicture" />
-                        @item.ItemName
-                    </a>
-                    <br /><span>销量: @item.ItemSales</span>
-                    <br /><span>库存: @item.ItemNumber</span>
-                    <br /><span>价格: @item.ItemPrice</span>
-                </li>
-
-            }
-        } else {
-            <li><h2>No Item!</h2></li>
-        }
-    </ul>
+@if (Model != null && Model.Count > 0) {
+<h2 class="text-center">商品类型: @TMall.Respository.Item.GetItemCategoryName(Model[0].ItemCategoryId)
+    <span class="small">(total: @ViewData["totalCount"])</span>
+</h2><hr/>
+<div class="row">
+@foreach (var item in Model) {
+    <div class="col-md-3 col-sm-3 col-lg-3" style="padding: 0;font-size: larger; color: black">
+        <div class="line text-center" style="background-color: white; margin: 5px">
+            <a href="/Item/Detail?item_id=@item.ItemId" target="_blank">
+                <img src="@item.ItemPicture" class="img-responsive" />
+                <span style="color: black">@item.ItemName</span>
+            </a>
+            <br /><span style="color: red;font-size: xx-large">¥ @item.ItemPrice</span>
+            <br /><span>销量: @item.ItemSales</span>  <span>库存: @item.ItemNumber</span>
+        </div>
+    </div>
+}
 </div>
-<div>
-    @Html.Pager(Model, new PagerOptions() {
-        AutoHide = false,
-        PageIndexParameterName = "page",
-        FirstPageText = "首页",
-        PrevPageText = "上一页",
-        NextPageText = "下一页",
-        LastPageText = "尾页",
-    })
+} else {
+<h2 class="text-center text-danger">No Item!</h2>
+}
+<div class="text-center" style="margin: 10px; font-size: larger">
+@Html.Pager(Model, new PagerOptions() {
+    AutoHide = false,
+    CssClass = "pagination",
+    CurrentPagerItemTemplate= "<li class='active'><a href='javascript:void(0);'>{0}</a></li>",
+    DisabledPagerItemTemplate = "<li class='disabled'><a>{0}</a></li>",
+    PagerItemTemplate = "<li>{0}</li>",
+    PageIndexParameterName = "page",
+    FirstPageText = "首页",
+    PrevPageText = "上一页",
+    NextPageText = "下一页",
+    LastPageText = "尾页",
+})
 </div>

@@ -8,34 +8,38 @@
 
 <div class="row">
     <div id="cartAPP" class="col-md-12 col-sm-12 col-lg-12">
-        <div class="row" data-toggle="collapse" data-target="#cartList">
+        <div class="row" data-toggle="collapse" data-target="#cartList"  style="background-color: snow">
             <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6"><h2>购物车</h2></div>
             <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6 text-right">
                 <h2><a href="javascript:void(0);"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></h2>
             </div>
-            <div class="col-md-12"><hr /></div>
         </div>
+        <hr/>
         <!-- 上面的div是折叠块的打开关闭界面, 下面的div是折叠块(默认折叠)-->
         <div id="cartList" class="collapse">
             <ul class="list-group">
-                <li v-for="cart in carts" class="list-group-item">
+                <li v-for="cart in carts" class="list-group-item" style="margin-bottom:10px;">
                     <div class="row">
-                        <div class="col-sm-7">
+                        <div class="col-sm-3 col-md-3">
                             <a v-bind:href="cart.Href" target="_blank">
-                                <img v-bind:src="cart.ItemPicture" class="img-responsive" alt="商品图片" />
+                                <img v-bind:src="cart.ItemPicture" class="img-responsive line" alt="商品图片" />
                             </a>
                         </div>
-                        <div class="col-sm-5">
-                            <span>商品编号: {{cart.ItemId}}</span><br />
-                            <span>商品名称: {{cart.ItemName}}</span><br />
-                            <span>商品价格: {{cart.ItemPrice}}</span><br />
-                            <span>商品销量: {{cart.ItemSales}}</span><br />
-                            <span>商品库存: {{cart.ItemNumber}}</span><br />
-                            <span>加入购物车数量: {{cart.CartItemNumber}}</span><br />
-                            <span>加入购物车时间: {{cart.CartInTime}}</span><br />
-                            <button class="btn btn-primary" v-on:click="setCart" v-bind:name="cart.ItemId">修改数量</button>
-                            <button class="btn btn-danger" v-on:click="delCart" v-bind:name="cart.ItemId">从购物车移除</button>
-                            <button class="btn btn-primary" onclick="buy(this);" v-bind:name="cart.ItemId">立即购买</button>
+                        <div class="col-sm-6 col-md-6">
+                            <ul class="list-group">
+                            <li class="list-group-item">商品编号: {{cart.ItemId}}</li>
+                            <li class="list-group-item">商品名称: {{cart.ItemName}}</li>
+                            <li class="list-group-item">商品价格: {{cart.ItemPrice}}</li>
+                            <li class="list-group-item">商品销量: {{cart.ItemSales}}</li>
+                            <li class="list-group-item">商品库存: {{cart.ItemNumber}}</li>
+                            <li class="list-group-item">加入购物车数量: {{cart.CartItemNumber}}</li>
+                            <li class="list-group-item">加入购物车时间: {{cart.CartInTime}}</li>
+                            </ul>
+                        </div>
+                        <div class="col-sm-3 col-md-3">
+                            <button class="btn btn-primary" style="margin-top: 30px" v-on:click="setCart" v-bind:name="cart.ItemId">修改数量</button><br/>
+                            <button class="btn btn-danger" style="margin-top: 10px" v-on:click="delCart" v-bind:name="cart.ItemId">从购物车移除</button><br/>
+                            <button class="btn btn-success" style="margin-top: 10px" onclick="buy(this);" v-bind:name="cart.ItemId">立即购买</button><br/>
                         </div>
                     </div>
                 </li>
@@ -43,15 +47,15 @@
         </div>
     </div>
     <div id="orderAPP" class="col-md-12 col-sm-12 col-lg-12">
-        <div class="row" data-toggle="collapse" data-target="#orderList">
+        <div class="row" data-toggle="collapse" data-target="#orderList"  style="background-color: snow">
             <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6"><h2>我的订单</h2></div>
             <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6 text-right">
                 <h2><a href="javascript:void(0);"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></h2>
             </div>
-            <div class="col-md-12"><hr /></div>
         </div>
+        <hr/>
         <!-- 上面的div是折叠块的打开关闭界面, 下面的div是折叠块(默认折叠)-->
-        <div id="orderList" class="collapse">
+        <div id="orderList" class="collapse" style="background-color: white">
             <table class="table table-bordered table-hover table-responsive">
                 <thead>
                     <tr><th>订单编号</th><th>商品编号</th><th>商品价格</th><th>商品数量</th><th>总价</th><th>状态</th><th>创建时间</th><th>操作</th></tr>
@@ -73,31 +77,35 @@
         </div>
     </div>
     <div id="collectAPP" class="col-md-12 col-sm-12 col-lg-12">
-        <div class="row" data-toggle="collapse" data-target="#collectList">
+        <div class="row" data-toggle="collapse" data-target="#collectList"  style="background-color: snow">
             <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6"><h2>我的收藏</h2></div>
             <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6 text-right">
                 <h2><a href="javascript:void(0);"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></h2>
             </div>
-            <div class="col-md-12"><hr /></div>
         </div>
+        <hr/>
         <!-- 上面的div是折叠块的打开关闭界面, 下面的div是折叠块(默认折叠)-->
         <div id="collectList" class="collapse">
             <ul class="list-group">
                 <li v-for="collect in collects" class="list-group-item">
                     <div class="row">
-                        <div class="col-sm-7">
+                        <div class="col-sm-3 col-md-3">
                             <a v-bind:href="collect.Href" target="_blank">
                                 <img v-bind:src="collect.ItemPicture" class="img-responsive" alt="商品图片" />
                             </a>
                         </div>
-                        <div class="col-sm-5">
-                            <span>商品编号: {{collect.ItemId}}</span><br />
-                            <span>商品名称: {{collect.ItemName}}</span><br />
-                            <span>商品价格: {{collect.ItemPrice}}</span><br />
-                            <span>商品销量: {{collect.ItemSales}}</span><br />
-                            <span>商品库存: {{collect.ItemNumber}}</span><br />
-                            <span>收藏时间: {{collect.CollectTime}}</span><br />
-                            <button class="btn btn-danger" v-on:click="delCollect" v-bind:name="collect.ItemId">取消收藏</button>
+                        <div class="col-sm-6 col-md-6">
+                            <ul class="list-group">
+                                <li class="list-group-item">商品编号: {{collect.ItemId}}</li>
+                                <li class="list-group-item">商品名称: {{collect.ItemName}}</li>
+                                <li class="list-group-item">商品价格: {{collect.ItemPrice}}</li>
+                                <li class="list-group-item">商品销量: {{collect.ItemSales}}</li>
+                                <li class="list-group-item">商品库存: {{collect.ItemNumber}}</li>
+                                <li class="list-group-item">收藏时间: {{collect.CollectTime}}</li>
+                                <li class="list-group-item">操作: 
+                                    <button class="btn btn-danger" style="margin-left:20px" v-on:click="delCollect" v-bind:name="collect.ItemId">取消收藏</button>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </li>
@@ -105,16 +113,16 @@
         </div>
     </div>
     <div id="profileAPP" class="col-md-12 col-sm-12 col-lg-12">
-        <div class="row" data-toggle="collapse" data-target="#profile">
+        <div class="row" data-toggle="collapse" data-target="#profile" style="background-color: snow">
             <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6"><h2>个人信息</h2></div>
             <div class="col-md-6 col-sm-6 col-xs-6 col-lg-6 text-right">
                 <h2><a href="javascript:void(0);"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a></h2>
             </div>
-            <div class="col-md-12"><hr /></div>
         </div>
+        <hr/>
         <!-- 上面的div是折叠块的打开关闭界面, 下面的div是折叠块(默认折叠)-->
         <div id="profile" class="collapse">
-            @using (Html.BeginForm("Register", "Users", FormMethod.Post, new { @class = "formhorizontal", role = "form" })) {
+            @using (Html.BeginForm("Register", "Users", FormMethod.Post, new { @class = "form-horizontal", role = "form" })) {
                 <div class="form-group">
                     @Html.LabelFor(m => m.Username, new { @class = "col-sm-2 control-label" })
                     <div class="col-sm-10">
@@ -211,9 +219,17 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <img id="captchaImg" src="/Users/Captcha" alt="验证码" />
-                    <a href="javascript:void(0)" onclick="$('#captchaImg')[0].src=$('#captchaImg')[0].src+'?';">看不清楚?换一张</a>
-                    <button type="button" v-on:click="update" class="btn btn-primary">更新信息</button>
+                    <div class="col-md-2 col-sm-2 col-md-offset-2 col-sm-offset-2" style="padding-right: 0">
+                        <a href="javascript:void(0)" onclick="$('#captchaImg')[0].src=$('#captchaImg')[0].src+'?';">看不清楚?换一张</a>
+                    </div>
+                    <div class="col-md-3 col-sm-3" style="padding-left: 0">
+                        <img id="captchaImg" src="/Users/Captcha" class="img-responsive" alt="验证码" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-8 col-md-8 col-sm-offset-2 col-md-offset-2">
+                        <button type="button" v-on:click="update" class="btn btn-primary btn-block">更新信息</button>
+                    </div>
                 </div>
             }
         </div>
@@ -276,6 +292,16 @@
     function testNull(x) { // 判断是不是空的函数
         return x == null || x == undefined || x === "";
     }
+
+    function openAPP() { // 获取锚并且打开对应app;
+        let s = window.location.hash; // 获取url的锚
+        if (!testNull(s)) {
+            $(s).children()[2].className = "collapse in"; // 将这个app的页面变成打开
+        }
+    }
+    openAPP();
+    window.onhashchange = openAPP;// 监视锚的变化
+
     var profileAPP = new Vue({
         el: "#profileAPP",
         data: {

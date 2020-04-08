@@ -23,7 +23,7 @@ namespace TMall.Controllers {
                  post: 增加评论, 两个参数: item_id, comment
 	 */
     public class ItemController : Controller{
-        public const int PageSize = 4; // 设置每页展示的大小
+        public const int PageSize = 16; // 设置每页展示的大小
 
         // 获取商品列表
         [HttpGet]
